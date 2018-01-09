@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <!-- must import here! -->
+    <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+    <script>
+      
+      //just like vanilla js
+      var svg = d3.select('body') // selecting a body tag from d3 library
+          .append('svg') //appending an svg tag to it, 
+          .attr('width', 200) // modifying the svg tag's attributes
+          .attr('height', 200)
+      //finally storing the svg TAG as a svg JS VARIABLE
+      
+      svg.append('rect')
+          .attr('x', 10)
+          .attr('y', 10)
+          .attr('width', 50)
+          .attr('height', 100)
+      
+      
+    </script>
+  </body>
+</html>

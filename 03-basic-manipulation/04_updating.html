@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>A simple rectangle</title>
+  <style>
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    rect {
+      stroke-width: 1;
+      stroke:steelblue;
+      fill:#888;
+      fill-opacity: .5;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <!-- <script src="../lib/d3.v4.min.js"></script> -->
+  <script>
+
+//skip, this is just regenerating random sizes to be used in making rect
+  var makeData = function(n){
+    var arr = [];
+
+    for (var i=0; i<n; i++){
+      arr.push({
+        x:Math.floor((Math.random() * 100) + 1),
+        y:Math.floor((Math.random() * 100) + 1),
+        width:Math.floor((Math.random() * 100) + 1),
+        height:Math.floor((Math.random() * 100) + 1)
+      })
+    };
+
+    return arr;
+  }
+  
+  // this function: makes rect from data 
+  var rectangles = function(svg) {
+  //generate data 
+    var data = makeData(2);
+    
+    //binding data to svg, but not actually creating rect 
+    // setting a rect var to make it easy to work with below
+    var rect = svg.selectAll('rect').data(data);
+
+//rect is data!! 
+
+    // Enter
+    // creating, binding, displaying rect
+    rect.enter().append('rect')
+      .attr('test', function(d,i) {
+        console.log('enter placing initial rectangle: ', i)
+    });
+  
+    // Update
+    // since new rectangle dimensions are created everytime func run
+    // this just provides a transition to update each rect in rect var 
+    // this transition() method maps the following functions onto each rect 
+    //rect !!! is data, which keeps updating, so thats why it can be mapped  
+    rect.transition().duration(500)
+        .attr('x', function(d){ return d.x; })
+        .attr('y', function(d){ return d.y; })
+        .attr('width', function(d){ return d.width; })
+        .attr('height', function(d){ return d.height; })
+        .attr('test', function(d, i) {
+          // update every data change
+          console.log('updating x position to: ', d.x)
+        });
+  };
+
+  var svg = d3.select("body")
+      .append("svg")
+      .attr("width", 200)
+      .attr("height", 200);
+
+//run once first 
+  rectangles(svg);
+
+//run every second there after 
+  setInterval(function(){
+    rectangles(svg);
+  },1000);
+
+  </script>
+</body>
+</html>
+

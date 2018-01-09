@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mexico</title>
+  <style>
+    .boundary {
+      fill: #ddd;
+      stroke: #888;
+      stroke-linejoin: round;
+    }
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+      background: #fff;
+    }
+    #tooltip{
+      position: absolute;
+      z-index: 2;
+      background: rgba(0,153,76,0.8);
+      width:130px;
+      height:20px;
+      color:white;
+      font-size: 14px;
+      padding:5px;
+      top:-150px;
+      left:-150px;
+      font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    }
+    
+    /* 1) creating an svg inside the div element */
+      #tooltip svg{
+      border-top:0;
+      margin-left:-5px;
+      margin-top:7px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="tooltip"></div>
+
+  <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <script src="../lib/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/topojson.v3.min.js"></script>
+
+  
+  <script src="base.js"></script>
+  <script src="sparkline.js"></script>
+
+  <script>
+(function(){
+
+  var height = 600;
+  var width = 900;
+  var projection = d3.geoMercator();
+  var mexico = void 0;
+
+// NB 1) GET and STORE DATA 
+  //a hash for quick look up of the data that makes the chart in the popup
+  var db = d3.map();
+  
+  //algorithm to make the chart outline
+  var sparkline = d3.charts.sparkline().height(50).width(138);
+
+// all this does is prepare a hash to access later
+// function that loops through data points and stores them in the db hash 
+  var setDb = function(data) {
+    data.forEach(function(d) {
+// set the id look up with the usual id assignment function 
+      db.set(d.geoID, [
+        {"x": 1, "y": +d.q1},
+        {"x": 2, "y": +d.q2},
+        {"x": 3, "y": +d.q3},
+        {"x": 4, "y": +d.q4}]);
+    });
+  };
+
+  var geoID = function(d) {
+    return "c" + d.properties.ID_1;
+  };
+/////////////////////////////////////
+
+// NB 2) CREATE CONTAINER, ACCCESS INPUT DATA and RENDER 
+  var hover = function(d) {
+    var div = document.getElementById('tooltip');
+    div.style.left = event.pageX +'px';
+    div.style.top = event.pageY + 'px';
+    div.innerHTML = d.properties.NAME_1;
+    
+// this looks up the id of the path, uses it to retrieve the data in db,
+// then used in the final sparkline.draw function 
+//renders the chart 
+    var id = geoID(d);
+    d3.select("#tooltip").datum(db.get(id)).call(sparkline.draw);
+  };
+///////////////////
+
+
+  var path = d3.geoPath().projection(projection);
+
+  var svg = d3.select("#map")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  d3.json('geo-data.json', function(data) {
+    var states = topojson.feature(data, data.objects.MEX_adm1);
+
+    var b, s, t;
+    projection.scale(1).translate([0, 0]);
+    var b = path.bounds(states);
+    var s = .9 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
+    var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+    projection.scale(s).translate(t);
+
+    var map = svg.append('g').attr('class', 'boundary');
+    mexico = map.selectAll('path').data(states.features);
+
+    mexico.enter()
+       .append('path')
+       .attr('d', path)
+       .on("mouseover", hover);
+
+    mexico.attr('fill', '#eee');
+
+    mexico.exit().remove();
+    
+  //invokes ajax call to get data from file, then send to setDB in order to create the indexed hash
+    d3.csv('states-data.csv', function(data) {
+      setDb(data);
+    });
+  });
+
+})();
+  </script>
+</body>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mexico</title>
+  <style>
+    .boundary {
+      fill: #ccc;
+      stroke: #888;
+      stroke-linejoin: round;
+    }
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script src="../lib/d3.v4.min.js"></script>
+  <script src="../lib/topojson.v1.min.js"></script>
+
+  <script>
+  (function(){
+
+    var height = 600;
+    var width = 900;
+    //clipAngle normalizes the continents, play around with it!
+    var projection = d3.geoOrthographic().clipAngle(90);
+    var path = d3.geoPath().projection(projection);
+    
+    //same as before, create svg  
+    var svg = d3.select("#map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    d3.json('world.json', function(data) {
+    // 1) doing two things: extract data for all countries AND separately store just mexicos
+      var countries = topojson.feature(data, data.objects.countries);
+      var mexico = countries.features[102];
+      
+      // 2) attaching data to a path like before but additionally for mexico
+      // mexico isnt separate, it's just layering on top  
+      var map = svg.append('g').attr('class', 'boundary');
+      var world = map.selectAll('path').data(countries.features);
+      mexico = map.selectAll('.mexico').data([mexico]);
+    
+    //regular projection stuff   
+      projection.scale(1).translate([0, 0]);
+      var b = path.bounds(countries);
+      var s = .9 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
+      var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+      projection.scale(s).translate(t);
+
+    //create world like usual
+      world.enter()
+        .append('path')
+        .attr('d', path);
+    //but also do it for mexico again
+      mexico.enter()
+       .append('path')
+       .attr('class', 'mexico')
+       .attr('d', path)
+       .style('fill', 'lightyellow').style('stroke', 'orange');
+       
+       // setInterval, but its replacement in v4 of d3 
+       d3.timer(function(elapsed) {
+         // rotate([pitch, yaw, roll]) corresponds to [horizontal, vertical, rotate on z axis]
+         projection.rotate([0.02 * elapsed - 120, 0, 0 ]); 
+         map.selectAll('path').attr('d', path);
+       });
+
+    });
+
+  })();
+ </script>
+</body>

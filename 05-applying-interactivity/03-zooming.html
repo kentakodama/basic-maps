@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Mexico</title>
+  <style>
+    .boundary {
+      fill: #ddd;
+      stroke: #888;
+      stroke-linejoin: round;
+    }
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    #tooltip{
+      position: absolute;
+      z-index: 2;
+      background: rgba(0,153,76,0.8);
+      width:130px;
+      height:20px;
+      color:white;
+      font-size: 14px;
+      padding:5px;
+      top:-150px;
+      left:-150px;
+      font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    }
+
+/* 1) must have a transparent filter over the entire map */
+    .overlay {
+      fill: none;
+      pointer-events: all;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <div id="tooltip"></div>
+<!-- 1 create div for popup box here -->
+  <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <script src="../lib/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/topojson.v3.min.js"></script>
+
+  <script>
+(function() {
+
+  var height = 600;
+  var width = 900;
+  var projection = d3.geoMercator();
+  var map = void 0;
+  var mexico = void 0;
+
+  var path = d3.geoPath().projection(projection);
+
+  var svg = d3.select("#map")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  d3.json('geo-data.json', function(data) {
+    var states = topojson.feature(data, data.objects.MEX_adm1);
+
+    var b, s, t;
+    projection.scale(1).translate([0, 0]);
+    var b = path.bounds(states);
+    var s = .9 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
+    var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+    projection.scale(s).translate(t);
+
+    map = svg.append('g').attr('class', 'boundary');
+    
+    // this handles the zooming 
+    var zoomed = function () {
+      map.attr("transform", "translate("+ d3.event.transform.x + "," + d3.event.transform.y +")scale(" + d3.event.transform.k + ")");
+      // 1) d3.event.translate defines the position of the map in relation to the
+      // mouse in terms of an SVG translate.
+      // 2) d3.event.scale defines the zoom level on the svg scale
+    }
+    
+    // this listens for the zoom scroll or gesture 
+    // scaleExtent gives the range of zoom to listen for 
+    var zoom = d3.zoom() 
+      .scaleExtent([1, 8]) // [A, B] A is max zoom out, B is max zoon in
+      .on("zoom", zoomed);
+    
+    
+    mexico = map.selectAll('path').data(states.features);
+
+
+    mexico.enter()
+       .append('path')
+       .attr('d', path)
+  
+
+    mexico.attr('fill', '#eee');
+
+    mexico.exit().remove();
+  
+  // this adds the filter, that can capture the mouse events over the entire map    
+  //otherwise the mouse scrolling would move the whole page down  
+    svg.append("rect")
+      .attr("class", "overlay")
+      .attr("width", width)
+      .attr("height", height)
+      .call(zoom); // two part way to add event handler
+    
+  });
+
+})();
+  </script>
+</body>

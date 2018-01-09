@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    rect {
+      stroke-width: 1;
+      stroke:steelblue;
+      fill:#888;
+      fill-opacity: .5;
+    }
+  </style>
+  </head>
+  <body>
+    <!-- must import here! -->
+    <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+    <script>
+      
+      //just like vanilla js
+      var svg = d3.select('body') // selecting a body tag from d3 library
+          .append('svg') //appending an svg tag to it, 
+          .attr('width', 200) // modifying the svg tag's attributes
+          .attr('height', 200)
+      //finally storing the svg TAG as a svg JS VARIABLE
+      
+    //this below is creating rectangles
+    // !!!! this 'rect' in selectAll doesnt MEAN ANYTHING, placeholder  
+    //magic shit
+      svg.selectAll('rect').data([1, 2]).enter() // loop through array
+        //and create rectangles based on each element by passing it into func as d
+          .append('rect')
+          .attr('x', function(d) {return d * 20; })
+          .attr('y', function(d) {return d * 50; })
+          .attr("width",50)
+          .attr("height",100);
+          
+          
+        
+    </script>
+  </body>
+</html>
+
+
+
