@@ -36,8 +36,8 @@
 
       var handleClick = function(d) {
         console.log('d',d);
-        d3.selectAll('path').attr('fill-opacity',0.2) //all
-        d3.select('#' + getID(d)).attr('fill-opacity', 1); // selected state using id in DOM
+        d3.selectAll('path').attr('fill-opacity',0.2) 
+        d3.select('#' + getID(d)).attr('fill-opacity', 1);
       };
 
       var path = d3.geoPath().projection(projection);
